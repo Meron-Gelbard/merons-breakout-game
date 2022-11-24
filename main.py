@@ -125,6 +125,4 @@ while True:
 
 
 
-
-#TODO make one blit comand for all elements
 #TODO make game elements dictionary as parameters for updating status
