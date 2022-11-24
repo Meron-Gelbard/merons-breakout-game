@@ -5,105 +5,123 @@ from player import Paddle
 from scoreboard import Scoreboard
 import pygame.locals as K
 
-pygame.init()
 
-SCREEN_SIZE = width, height = 1280, 900
-BG_COLOR = 0, 0, 0
-BRICK_SIZE = (80, 30)
-START_SPEED = 7.0
-screen = pygame.display.set_mode(SCREEN_SIZE)
-MID_SCREEN = screen.get_size()[0] / 3, screen.get_size()[1] / 2
-game_level = 3
-lives = 5
+class Game:
+    def __init__(self):
+        pygame.init()
+        SCREEN_SIZE = width, height = 1280, 900
+        self.BG_COLOR = 0, 0, 0
+        self.BRICK_SIZE = (80, 30)
+        self.START_SPEED = 7.0
 
-ball = Ball(brick_size=BRICK_SIZE, start_speed=START_SPEED)
-paddle = Paddle(screen)
-scoreboard = Scoreboard()
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        self.MID_SCREEN = self.screen.get_size()[0] / 3, self.screen.get_size()[1] / 2
+        self.ui_font = pygame.font.SysFont("monospace", 25, bold=True)
 
-ui_font = pygame.font.SysFont("monospace", 25, bold=True)
-player_name = ''
-game_status = 'login'
-clock = pygame.time.Clock()
+        self.game_level = 3
+        self.lives = 5
+        self.player_name = ''
+        self.game_status = 'login'
+        self.ball = Ball(brick_size=self.BRICK_SIZE, start_speed=self.START_SPEED)
+        self.paddle = Paddle(self.screen)
+        self.scoreboard = Scoreboard()
+        self.line_manager = None
+        self.clock = pygame.time.Clock()
+        self.clock.tick(60)
 
+        self.GAME_STATES = {'login': self.login,
+                            'start': self.start,
+                            'play': self.play,
+                            'catch': self.catch,
+                            'level cleared': self.level_cleared,
+                            'game over': self.game_over
+                            }
 
-def flip_n_delay(delay):
-    pygame.display.flip()
-    pygame.time.wait(delay)
+    def flip_n_delay(self, delay):
+        pygame.display.flip()
+        pygame.time.wait(delay)
 
-
-while True:
-
-    if game_status == 'login':
-        line_manager = LineManager(line_count=game_level, screen=screen, brick_size=BRICK_SIZE)
-        scoreboard.score = 0
-        scoreboard.lives = lives
+    def login(self):
+        self.line_manager = LineManager(line_count=self.  game_level, screen=self.screen, brick_size=self.BRICK_SIZE)
+        self.scoreboard.score = 0
+        self.scoreboard.lives = self.lives
         pygame.key.set_repeat(500, 60)
-        screen.fill(BG_COLOR)
-        if scoreboard.log_in(screen=screen, font=ui_font, mid_screen=MID_SCREEN) == 'start':
-            game_status = 'start'
+        self.screen.fill(self.BG_COLOR)
+        if self.scoreboard.log_in(screen=self.screen, font=self.ui_font, mid_screen=self.MID_SCREEN) == 'start':
+            self.game_status = 'start'
 
-    elif game_status == 'start':
-        screen.fill(BG_COLOR)
-        scoreboard.blit_board(screen=screen)
-        line_manager = LineManager(line_count=game_level, screen=screen, brick_size=BRICK_SIZE)
-        line_manager.start_blit(screen)
-        game_status = 'catch'
-        ball.status = 'catch'
-        clock.tick(60)
+    def start(self):
+        self.screen.fill(self.BG_COLOR)
+        self.scoreboard.blit_board(screen=self.screen)
+        self.line_manager = LineManager(line_count=self.game_level, screen=self.screen, brick_size=self.BRICK_SIZE)
+        self.line_manager.start_blit(self.screen)
+        self.game_status = 'catch'
+        self.ball.status = 'catch'
+        self.clock.tick(60)
 
-    elif game_status == 'level cleared':
-        game_level += 1
-        ball.speed = [START_SPEED, START_SPEED]
-        ball.blit_ball(screen)
-        scoreboard.lives += 1
-        scoreboard.score += game_level * 2
-        game_status = 'start'
+    def level_cleared(self):
+        self.game_level += 1
+        self.ball.speed = [self.START_SPEED, self.START_SPEED]
+        self.ball.blit_ball(self.screen)
+        self.scoreboard.lives += 1
+        self.scoreboard.score += self.game_level * 2
+        self.game_status = 'start'
 
-    elif game_status == 'catch':
-        screen.fill(BG_COLOR)
+    def catch(self):
+        self.screen.fill(self.BG_COLOR)
         pygame.key.set_repeat(1, 3)
-        game_status = paddle.update_status(screen=screen, line_manager=line_manager, ball=ball, scoreboard=scoreboard)
-        ball.ball_move(screen=screen, line_manager=line_manager, paddle=paddle, scoreboard=scoreboard)
-        line_manager.blit_lines(screen=screen)
-        scoreboard.blit_board(screen=screen)
-        clock.tick(60)
+        self.game_status = self.paddle.update_status(screen=self.screen, line_manager=self.line_manager, ball=self.ball, scoreboard=self.scoreboard)
+        self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle, scoreboard=self.scoreboard)
+        self.line_manager.blit_lines(screen=self.screen)
+        self.scoreboard.blit_board(screen=self.screen)
+        self.clock.tick(60)
 
-    elif game_status == 'play':
-        screen.fill(BG_COLOR)
-        line_manager.blit_lines(screen=screen)
-        scoreboard.blit_board(screen=screen)
-        ball.ball_move(screen=screen, line_manager=line_manager, paddle=paddle, scoreboard=scoreboard)
-        game_status = paddle.update_status(screen=screen, line_manager=line_manager, ball=ball, scoreboard=scoreboard)
-        if scoreboard.lives == 0:
-            screen.fill(BG_COLOR)
-            paddle.blit_paddle(screen)
-            scoreboard.blit_board(screen)
-            line_manager.blit_lines(screen)
-            scoreboard.game_over(screen)
-            flip_n_delay(300)
-            scoreboard.new_high(screen)
-            flip_n_delay(500)
-            game_status = 'game over'
-        clock.tick(60)
+    def play(self):
+        self.screen.fill(self.BG_COLOR)
+        self.line_manager.blit_lines(screen=self.screen)
+        self.scoreboard.blit_board(screen=self.screen)
+        self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle, scoreboard=self.scoreboard)
+        self.game_status = self.paddle.update_status(screen=self.screen, line_manager=self.line_manager, ball=self.ball, scoreboard=self.scoreboard)
+        self.clock.tick(60)
+        if self.scoreboard.lives == 0:
+            self.screen.fill(self.BG_COLOR)
+            self.paddle.blit_paddle(self.screen)
+            self.scoreboard.blit_board(self.screen)
+            self.line_manager.blit_lines(self.screen)
+            self.scoreboard.game_over(self.screen)
+            self.flip_n_delay(300)
+            self.scoreboard.new_high(self.screen)
+            self.flip_n_delay(500)
+            self.game_status = 'game over'
 
-    elif game_status == 'game over':
-        scoreboard.game_over(screen)
-        scoreboard.quit_question(screen)
-        paddle.blit_paddle(screen)
-        game_level = 3
+    def game_over(self):
+        self.scoreboard.game_over(self.screen)
+        self.scoreboard.quit_question(self.screen)
+        self.paddle.blit_paddle(self.screen)
+        self.game_level = 3
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == K.K_y:
-                    scoreboard.player_name = ''
-                    game_status = 'login'
+                    self.scoreboard.player_name = ''
+                    self.game_status = 'login'
                     pygame.time.wait(500)
                     pygame.event.clear()
                 if event.key == K.K_n:
-                    screen.fill(BG_COLOR)
-                    scoreboard.babye(screen)
+                    self.screen.fill(self.BG_COLOR)
+                    self.scoreboard.babye(self.screen)
                     pygame.time.wait(2000)
                     sys.exit()
             if event.type == pygame.QUIT:
                 sys.exit()
 
+
+game = Game()
+while True:
+    game.GAME_STATES[game.game_status]()
     pygame.display.flip()
+
+
+
+
+#TODO make one blit comand for all elements
+#TODO make game elements dictionary as parameters for updating status
