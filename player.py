@@ -24,12 +24,12 @@ class Paddle:
                     self.move_left(ball)
                 if event.key == K.K_SPACE and self.status == 'catch':
                     self.status = 'play'
-                    self.blit_paddle(screen)
+                    # self.blit_paddle(screen)
                     ball.release()
                     return self.status
             if event.type == pygame.QUIT:
                 sys.exit()
-        self.blit_paddle(screen)
+        # self.blit_paddle(screen)
         if line_manager.brick_count == 0 and self.paddle_rect.colliderect(ball.ballrect):
             self.status = 'level cleared'
         elif ball.status == 'catch':

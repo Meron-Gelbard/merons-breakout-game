@@ -63,7 +63,7 @@ class Ball:
             brick_bounce()
             screen_bounce()
             paddle_bounce()
-            screen.blit(self.ball, self.ballrect)
+            # screen.blit(self.ball, self.ballrect)
             if self.paddle_bounce == 5:
                 for line in line_manager.brick_lines:
                     for brick in line.brick_line:
@@ -84,11 +84,11 @@ class Ball:
 
         if self.status == 'play':
             ball_play()
-            self.blit_ball(screen)
+            # self.blit_ball(screen)
 
         if self.status == 'catch':
             ball_catch()
-            self.blit_ball(screen)
+            # self.blit_ball(screen)
 
     def release(self):
         self.speed = [self.start_speed, -self.start_speed]
