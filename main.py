@@ -27,7 +27,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # Game variables
-        self.game_level = 3
+        self.game_level = 1
         self.lives = 4
         self.player_name = ''
         self.game_status = 'login'
@@ -99,6 +99,8 @@ class Game:
         self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle, scoreboard=self.scoreboard)
         self.game_status = self.paddle.update_status(line_manager=self.line_manager, ball=self.ball, scoreboard=self.scoreboard)
         self.clock.tick(60)
+        if self.line_manager.brick_count == 0:
+            self.scoreboard.msg_blit(screen=self.screen, text="Catch The Ball!!!", row=4, color=(255, 255, 0))
         if self.scoreboard.lives == 0:
             self.screen.fill(self.BG_COLOR)
             self.blit_elements()

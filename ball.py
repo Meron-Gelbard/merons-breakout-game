@@ -77,7 +77,8 @@ class Ball:
                 for line in line_manager.brick_lines:
                     for brick in line.brick_line:
                         brick.brick_rect.bottom += brick.brick_rect.height
-                line_manager.get_bottom()
+                if line_manager.brick_count > 0:
+                    line_manager.get_bottom()
                 line_manager.blit_lines(screen)
                 self.speed[1] -= 0.33
                 if self.speed[0] > 0:
