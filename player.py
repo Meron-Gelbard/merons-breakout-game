@@ -15,7 +15,7 @@ class Paddle:
     def blit_paddle(self, screen):
         screen.blit(self.paddle, self.paddle_rect)
 
-    def update_status(self, screen, line_manager, ball, scoreboard):
+    def update_status(self, line_manager, ball, scoreboard):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == K.K_RIGHT:
@@ -24,12 +24,10 @@ class Paddle:
                     self.move_left(ball)
                 if event.key == K.K_SPACE and self.status == 'catch':
                     self.status = 'play'
-                    # self.blit_paddle(screen)
                     ball.release()
                     return self.status
             if event.type == pygame.QUIT:
                 sys.exit()
-        # self.blit_paddle(screen)
         if line_manager.brick_count == 0 and self.paddle_rect.colliderect(ball.ballrect):
             self.status = 'level cleared'
         elif ball.status == 'catch':

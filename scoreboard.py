@@ -47,7 +47,6 @@ class Scoreboard:
             row_text = row_text[:-len(high_scores[row][1])] + high_scores[row][1]
             self.msg_blit(text=row_text, screen=screen, row=6.5 + row*1.2, color=(255, 255, 255))
 
-
     def blit_board(self, screen):
         y_player = screen.get_size()[1] * 0.04
         x_player = screen.get_size()[0] * 0.05
@@ -77,6 +76,7 @@ class Scoreboard:
         for i in range(len(message) + 1):
             screen.fill((0, 0, 0))
             pygame.time.wait(400)
+            # do this with blit_msg func:
             text = self.ui_font.render(f"{' '.join(message[:i])}", False, (255, 255, 255))
             message_xy = (screen.get_size()[0] / 3, screen.get_size()[1] / 2)
             screen.blit(text, message_xy)

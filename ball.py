@@ -51,10 +51,11 @@ class Ball:
                         paddle.paddle_rect.left < self.ballrect.x < paddle.paddle_rect.center[0]
             collide_r = self.ballrect.colliderect(paddle.paddle_rect) and \
                         paddle.paddle_rect.center[0] < self.ballrect.x < paddle.paddle_rect.right
-            if collide_r:
+            in_width = paddle.brick_rect.left <= self.ballrect.x <= paddle.brick_rect.right
+            if collide_r and in_width:
                 self.speed = [abs(self.speed[0]), -self.speed[1]]
                 self.paddle_bounce += 1
-            elif collide_l:
+            elif collide_l and in_width:
                 self.speed = [-abs(self.speed[0]), -self.speed[1]]
                 self.paddle_bounce += 1
 
