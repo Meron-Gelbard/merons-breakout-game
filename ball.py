@@ -1,6 +1,7 @@
 import pygame
 
 class Ball:
+    # Ball object with speed, size and status attributes.
     def __init__(self, brick_size, start_speed):
         self.ball = pygame.image.load("img/ball_img.png")
         self.ball = pygame.transform.scale(self.ball, (12, 12))
@@ -12,21 +13,24 @@ class Ball:
         self.start_speed = start_speed
 
     def ball_move(self, screen, line_manager, paddle, scoreboard):
+        # full ball movement parent function.
         def screen_bounce():
-            screen_width = screen.get_size()[0]
-            screen_height = screen.get_size()[1]
-            if self.ballrect.left < 2 or self.ballrect.right > screen_width - 2:
+            # ball bounce off screen boundaries. bottom boundary hit takes 1 life & returns ball & paddle 'catch' state
+            if self.ballrect.left < 2 or self.ballrect.right > screen.get_size()[0] - 2:
                 self.speed[0] = -self.speed[0]
             elif self.ballrect.top < 2:
                 self.speed[1] = -self.speed[1]
-            elif self.ballrect.bottom > screen_height - 2:
+            elif self.ballrect.bottom > screen.get_size()[1] - 2:
                 scoreboard.lives -= 1
                 scoreboard.blit_board(screen)
+                pygame.event.clear()
                 pygame.time.wait(1000)
                 self.status = 'catch'
                 paddle.status = 'catch'
 
         def brick_bounce():
+            # checks ball collision with bricks. bounces ball accordingly and adds points relative to brick position.
+            # updates line manager brick count.
             line_index = 0
             for line in line_manager.brick_lines:
                 line_index += 1
@@ -47,23 +51,28 @@ class Ball:
                         line_manager.brick_count -= 1
 
         def paddle_bounce():
+            # bounces ball off paddle according to paddle side.
             collide_l = self.ballrect.colliderect(paddle.paddle_rect) and \
                         paddle.paddle_rect.left < self.ballrect.x < paddle.paddle_rect.center[0]
             collide_r = self.ballrect.colliderect(paddle.paddle_rect) and \
                         paddle.paddle_rect.center[0] < self.ballrect.x < paddle.paddle_rect.right
-            in_width = paddle.brick_rect.left <= self.ballrect.x <= paddle.brick_rect.right
+            in_width = paddle.paddle_rect.left <= self.ballrect.x <= paddle.paddle_rect.right
             if collide_r and in_width:
                 self.speed = [abs(self.speed[0]), -self.speed[1]]
                 self.paddle_bounce += 1
+                pygame.event.clear()
             elif collide_l and in_width:
                 self.speed = [-abs(self.speed[0]), -self.speed[1]]
                 self.paddle_bounce += 1
+                pygame.event.clear()
 
         def ball_play():
+            # loop function checking for ball bouncing and moving ball
             self.ballrect = self.ballrect.move(self.speed)
             brick_bounce()
             screen_bounce()
             paddle_bounce()
+            # every n paddle-bounces, ball speed-up and lowering brick lines.
             if self.paddle_bounce == 5:
                 for line in line_manager.brick_lines:
                     for brick in line.brick_line:
@@ -78,6 +87,7 @@ class Ball:
                 self.paddle_bounce = 0
 
         def ball_catch():
+            # catch state - 0 speed and position on paddle.
             self.speed = [0, 0]
             self.ballrect.x = paddle.paddle_rect.center[0]
             self.ballrect.bottom = paddle.paddle_rect.top
@@ -89,9 +99,11 @@ class Ball:
             ball_catch()
 
     def release(self):
+        # start ball movement with ball start speed.
         self.speed = [self.start_speed, -self.start_speed]
         self.status = 'play'
 
     def blit_ball(self, screen):
+        # update ball position on display
         screen.blit(self.ball, self.ballrect)
 

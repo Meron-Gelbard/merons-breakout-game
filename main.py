@@ -28,7 +28,7 @@ class Game:
 
         # Game variables
         self.game_level = 15
-        self.lives = 5
+        self.lives = 2
         self.player_name = ''
         self.game_status = 'login'
 

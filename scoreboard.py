@@ -5,7 +5,7 @@ import pygame.locals as K
 
 class Scoreboard:
     def __init__(self):
-
+        # object with player name, current lives and scores and some UI interaction.
         self.board_font = pygame.font.SysFont("monospace", 25, bold=True)
         self.score = 0
         self.lives = 0
@@ -19,6 +19,7 @@ class Scoreboard:
             self.current_high_scores = [row for row in current_scores]
 
     def log_in(self, screen, font, mid_screen):
+        # welcome screen with player login and current high scores.
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == K.K_BACKSPACE:
@@ -48,6 +49,7 @@ class Scoreboard:
             self.msg_blit(text=row_text, screen=screen, row=6.5 + row*1.2, color=(255, 255, 255))
 
     def blit_board(self, screen):
+        # update scoreboard display with current lives & score.
         y_player = screen.get_size()[1] * 0.04
         x_player = screen.get_size()[0] * 0.05
         lives_xy = (screen.get_size()[0] - 80, y_player + 3)
@@ -60,29 +62,31 @@ class Scoreboard:
         screen.blit(lives_l, (lives_xy[0] - 75, y_player))
 
     def game_over(self, screen):
+        # game over message
         self.msg_blit(screen=screen, text="GAME OVER", row=2, color=(255, 255, 255))
 
     def quit_question(self, screen):
+        # quit y/n message
         self.msg_blit(screen=screen, text="Start new game?  Y/N", row=4, color=(255, 255, 255))
 
     def new_high(self, screen):
+        # display 'new high score' message if score is higher than lowest high score. call update high scores func.
         if self.score > int(self.get_high_scores()[-1][1]):
             self.update_high_score()
             pygame.time.wait(1000)
             self.msg_blit(screen=screen, text="New high score!", row=1, color=(255, 255, 255))
 
     def babye(self, screen):
+        # display goodbye meessage with effect
         message = self.quit_msg.split(" ")
         for i in range(len(message) + 1):
             screen.fill((0, 0, 0))
             pygame.time.wait(400)
-            # do this with blit_msg func:
-            text = self.ui_font.render(f"{' '.join(message[:i])}", False, (255, 255, 255))
-            message_xy = (screen.get_size()[0] / 3, screen.get_size()[1] / 2)
-            screen.blit(text, message_xy)
+            self.msg_blit(screen=screen, row=5, text=f"{' '.join(message[:i])}", color=(255, 255, 255))
             pygame.display.flip()
 
     def update_high_score(self):
+        # get current high scores file. add new score. re-sort list. shorten list to 10 lines. re-write file.
         updated_scores = []
         with open('score_table.csv', 'r') as score_table:
             for row in csv.reader(score_table):
@@ -93,19 +97,19 @@ class Scoreboard:
             updated_scores.sort(key=lambda x: int(x[1]), reverse=True)
             if len(updated_scores) > 10:
                 updated_scores = updated_scores[:10]
-            writer = csv.writer(new_score_table)
             for row in updated_scores:
-                writer.writerow(row)
+                csv.writer(new_score_table).writerow(row)
 
     def get_high_scores(self):
+        # get current high scores
         with open('score_table.csv', 'r', newline='') as current_scores:
-            reader = csv.reader(current_scores)
             scores = []
-            for row in reader:
+            for row in csv.reader(current_scores):
                 scores.append(row)
             return scores
 
     def msg_blit(self, text, screen, row, color):
+        # display message on screen with padded background.
         center_surface = pygame.Surface(size=(5, 5))
         label = self.ui_font.render(text, False, color)
         center_surface = pygame.transform.scale(center_surface,
