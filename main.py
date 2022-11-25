@@ -27,8 +27,8 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # Game variables
-        self.game_level = 15
-        self.lives = 2
+        self.game_level = 3
+        self.lives = 4
         self.player_name = ''
         self.game_status = 'login'
 
