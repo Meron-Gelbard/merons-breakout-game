@@ -3,9 +3,13 @@ import sys
 import csv
 import pygame.locals as K
 
-class Scoreboard:
+
+class ScoreBoard:
+    """Game Scoreboard class holding life count, points count,
+    player name and UI messaging functionality.
+    """
+
     def __init__(self):
-        # object with player name, current lives and scores and some UI interaction.
         self.board_font = pygame.font.SysFont("monospace", 25, bold=True)
         self.score = 0
         self.lives = 0
@@ -15,11 +19,13 @@ class Scoreboard:
         self.lives_rect = self.lives_img.get_rect()
         self.ui_font = pygame.font.SysFont("monospace", 25, bold=True)
         self.quit_msg = "OK LOVE YA BYE-BYE !"
+        # Gets current high scores table from csv
         with open('score_table.csv', 'r') as current_scores:
             self.current_high_scores = [row for row in current_scores]
 
     def log_in(self, screen, font, mid_screen):
-        # welcome screen with player login and current high scores.
+        """Welcome screen with player sign-in system and current high scores."""
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == K.K_BACKSPACE:
@@ -39,6 +45,7 @@ class Scoreboard:
         self.msg_blit(text="Current high scores:", screen=screen, row=5, color=(255, 255, 255))
 
         high_scores = self.get_high_scores()
+
         for row in range(len(high_scores)):
             row_text = ''
             row_length = 25
@@ -49,7 +56,8 @@ class Scoreboard:
             self.msg_blit(text=row_text, screen=screen, row=6.5 + row*1.2, color=(255, 255, 255))
 
     def blit_board(self, screen):
-        # update scoreboard display with current lives & score.
+        """For repetitive update of scoreboard display with current lives & score."""
+        #
         y_player = screen.get_size()[1] * 0.04
         x_player = screen.get_size()[0] * 0.05
         lives_xy = (screen.get_size()[0] - 80, y_player + 3)
@@ -62,22 +70,26 @@ class Scoreboard:
         screen.blit(lives_l, (lives_xy[0] - 75, y_player))
 
     def game_over(self, screen):
-        # game over message
+        """Generates GAME-OVER message on screen"""
         self.msg_blit(screen=screen, text="GAME OVER", row=2, color=(255, 255, 255))
 
     def quit_question(self, screen):
-        # quit y/n message
+        """Generates quit question on screen"""
         self.msg_blit(screen=screen, text="Start new game?  Y/N", row=4, color=(255, 255, 255))
 
     def new_high(self, screen):
-        # display 'new high score' message if score is higher than lowest high score. call update high scores func.
+        """Generates 'New High Score' message if a high score was received.
+        Calls update high scores function
+        """
+        #
         if self.score > int(self.get_high_scores()[-1][1]):
             self.update_high_score()
             pygame.time.wait(1000)
             self.msg_blit(screen=screen, text="New high score!", row=1, color=(255, 255, 255))
 
-    def babye(self, screen):
-        # display goodbye meessage with effect
+    def byebye(self, screen):
+        """Generates 'goodbye' message with typing effect"""
+
         message = self.quit_msg.split(" ")
         for i in range(len(message) + 1):
             screen.fill((0, 0, 0))
@@ -86,7 +98,10 @@ class Scoreboard:
             pygame.display.flip()
 
     def update_high_score(self):
-        # get current high scores file. add new score. re-sort list. shorten list to 10 lines. re-write file.
+        """Gets current high scores file. Adds new score.
+        Re-sorts list & shortens to 10 high scores. Re-writes csv.
+        """
+        #
         updated_scores = []
         with open('score_table.csv', 'r') as score_table:
             for row in csv.reader(score_table):
@@ -100,8 +115,9 @@ class Scoreboard:
             for row in updated_scores:
                 csv.writer(new_score_table).writerow(row)
 
-    def get_high_scores(self):
-        # get current high scores
+    @staticmethod
+    def get_high_scores():
+        """ Gets current high scores """
         with open('score_table.csv', 'r', newline='') as current_scores:
             scores = []
             for row in csv.reader(current_scores):
@@ -109,7 +125,8 @@ class Scoreboard:
             return scores
 
     def msg_blit(self, text, screen, row, color):
-        # display message on screen with padded background.
+        """ Renders a message on screen with a padded black background. """
+
         center_surface = pygame.Surface(size=(5, 5))
         label = self.ui_font.render(text, False, color)
         center_surface = pygame.transform.scale(center_surface,

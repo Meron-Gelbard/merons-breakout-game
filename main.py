@@ -1,13 +1,16 @@
-import sys, pygame
+import sys
+import pygame
 from bricks import LineManager
 from ball import Ball
-from player import Paddle
-from scoreboard import Scoreboard
+from paddle import Paddle
+from scoreboard import ScoreBoard
 import pygame.locals as K
 
 
 class Game:
-    # game object with game state machine, elements and variables.
+    """ A game class that holds current game state using a state-machine.
+    Holds game element objects of a ball, a paddle, a scoreboard and the brick manager.
+    """
     def __init__(self):
         pygame.init()
         # Game constants
@@ -22,17 +25,17 @@ class Game:
         self.ui_font = pygame.font.SysFont("monospace", 25, bold=True)
         self.ball = Ball(brick_size=self.BRICK_SIZE, start_speed=self.START_SPEED)
         self.paddle = Paddle(self.screen)
-        self.scoreboard = Scoreboard()
+        self.scoreboard = ScoreBoard()
         self.line_manager = None
         self.clock = pygame.time.Clock()
 
         # Game variables
-        self.game_level = 1
+        self.game_level = 2
         self.lives = 4
         self.player_name = ''
         self.game_status = 'login'
 
-        # State machine dict
+        # State machine dict - Key: game state string, Value: corresponding function
         self.GAME_STATES = {'login': self.login,
                             'start': self.start,
                             'play': self.play,
@@ -41,22 +44,26 @@ class Game:
                             'game over': self.game_over
                             }
 
-    def flip_n_delay(self, delay):
-        #   update display + delay
+    @staticmethod
+    def flip_n_delay(delay):
+        """ Updates the display with a given delay"""
+
         pygame.display.flip()
         pygame.time.wait(delay)
 
     def blit_elements(self):
-        #   update element states
+        """ Calls rendering functions of all game elements"""
+
         self.ball.blit_ball(self.screen)
         self.scoreboard.blit_board(self.screen)
         self.paddle.blit_paddle(self.screen)
         self.line_manager.blit_lines(self.screen)
 
     def login(self):
-        #     create new Bricklines set, reset scoreboard & life. move to 'start'.
+        """ Creates a new Bricklines set, resets scoreboard (score & life). moves to 'start' state."""
+
         pygame.key.set_repeat(500, 60)
-        self.line_manager = LineManager(line_count=self.  game_level, screen=self.screen, brick_size=self.BRICK_SIZE)
+        self.line_manager = LineManager(line_count=self.game_level, screen=self.screen, brick_size=self.BRICK_SIZE)
         self.scoreboard.score = 0
         self.scoreboard.lives = self.lives
         self.screen.fill(self.BG_COLOR)
@@ -64,7 +71,8 @@ class Game:
             self.game_status = 'start'
 
     def start(self):
-        # display bricks, update line manager with new level, move to 'catch' state.
+        """ Displays bricks, updates line manager with new level, moves to ball/paddle 'catch' state."""
+
         self.screen.fill(self.BG_COLOR)
         self.scoreboard.blit_board(screen=self.screen)
         self.line_manager = LineManager(line_count=self.game_level, screen=self.screen, brick_size=self.BRICK_SIZE)
@@ -74,7 +82,8 @@ class Game:
         self.clock.tick(60)
 
     def level_cleared(self):
-        # Level up +1, reset ball speed, life +1, score + 2 x game level, move to 'start'.
+        """ Level up +1, resets ball speed, life +1, score + (2 x game level), move to 'start'."""
+
         self.screen.fill(self.BG_COLOR)
         self.game_level += 1
         self.ball.speed = [self.START_SPEED, self.START_SPEED]
@@ -84,20 +93,27 @@ class Game:
         self.game_status = 'start'
 
     def catch(self):
-        # paddle and ball movement on 'catch' state. update all elements.
+        """ Switches Paddle and ball to 'catch' state. Updates all element with current game state."""
+
         self.screen.fill(self.BG_COLOR)
         pygame.key.set_repeat(1, 3)
-        self.game_status = self.paddle.update_status(line_manager=self.line_manager, ball=self.ball, scoreboard=self.scoreboard)
-        self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle, scoreboard=self.scoreboard)
+        self.game_status = self.paddle.update_status(line_manager=self.line_manager, ball=self.ball,
+                                                     scoreboard=self.scoreboard)
+        self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle,
+                            scoreboard=self.scoreboard)
         self.blit_elements()
         self.clock.tick(60)
 
     def play(self):
-        # paddle and ball on 'play' state, update all elements, if 0 lives check for new high score and move to 'game over' state.
+        """ Paddle and ball on 'play' state, Updates elements,
+        If 0 lives - checks for new high score and moves to 'game over' state."""
+
         self.screen.fill(self.BG_COLOR)
         self.blit_elements()
-        self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle, scoreboard=self.scoreboard)
-        self.game_status = self.paddle.update_status(line_manager=self.line_manager, ball=self.ball, scoreboard=self.scoreboard)
+        self.ball.ball_move(screen=self.screen, line_manager=self.line_manager, paddle=self.paddle,
+                            scoreboard=self.scoreboard)
+        self.game_status = self.paddle.update_status(line_manager=self.line_manager, ball=self.ball,
+                                                     scoreboard=self.scoreboard)
         self.clock.tick(60)
         if self.line_manager.brick_count == 0:
             self.scoreboard.msg_blit(screen=self.screen, text="Catch The Ball!!!", row=4, color=(255, 255, 0))
@@ -111,7 +127,10 @@ class Game:
             self.game_status = 'game over'
 
     def game_over(self):
-        # stop ball and paddle movement, announce game over, ask if new game - yes => 'login' no=> bye-bye function,
+        """ Stops ball and paddle movement, announces game over,
+         asks user for a new game:
+          yes - switches 'login' state, no - calls 'bye-bye' quit function,"""
+
         self.scoreboard.game_over(self.screen)
         self.scoreboard.quit_question(self.screen)
         self.paddle.blit_paddle(self.screen)
@@ -125,7 +144,7 @@ class Game:
                     pygame.event.clear()
                 if event.key == K.K_n:
                     self.screen.fill(self.BG_COLOR)
-                    self.scoreboard.babye(self.screen)
+                    self.scoreboard.byebye(self.screen)
                     pygame.time.wait(2000)
                     sys.exit()
             if event.type == pygame.QUIT:
@@ -135,7 +154,7 @@ class Game:
 # create game object
 game = Game()
 while True:
-    # execute Game function according to game status. update display.
+    # Constantly executing Game functions according to current game status (using state-machine).
+    # Constantly calling screen update rendering (pygame screen flip function)
     game.GAME_STATES[game.game_status]()
     pygame.display.flip()
-

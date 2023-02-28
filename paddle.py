@@ -2,7 +2,9 @@ import pygame
 import sys
 import pygame.locals as K
 
+
 class Paddle:
+    """Game Paddle class"""
     def __init__(self, screen):
         self.paddle = pygame.image.load("img/paddle.png")
         self.paddle = pygame.transform.scale(self.paddle, (140, 20))
@@ -12,13 +14,17 @@ class Paddle:
         self.status = 'catch'
 
     def blit_paddle(self, screen):
-        # update paddle position on display
+        """Re-renders the paddle current position (using pygame blit method)"""
+
         screen.blit(self.paddle, self.paddle_rect)
 
     def update_status(self, line_manager, ball, scoreboard):
-        # listen to left/right key presses initiating paddle movement functions accordingly.
-        # catches ball when brick count is 0 and returns 'level cleared' to game status
-        # checks for brick lines hitting bottom limit and returns scoreboard.lives = 0
+        """ For repetitive update of:
+        The paddle position (using a keyboard left/right listner).
+        If 0 bricks are visible - switches to ball 'catch' state.
+        Checks if brick lines hit screen bottom - returning scoreboard.lives = 0 if they do.
+        """
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == K.K_RIGHT:
@@ -40,7 +46,8 @@ class Paddle:
         return self.status
 
     def move_left(self, ball):
-        # move paddle left with left screen boundary
+        """Move paddle one space left. With left screen boundary"""
+
         if self.paddle_rect.left > 0:
             if ball.status == 'play':
                 self.paddle_rect.x -= abs(ball.speed[0]) * 0.3
@@ -48,7 +55,8 @@ class Paddle:
                 self.paddle_rect.x -= 3
 
     def move_right(self, ball):
-        # move paddle right with right screen boundary
+        """Move paddle one space right. With right screen boundary"""
+
         if self.paddle_rect.right < self.screen_size[0]:
             if ball.status == 'play':
                 self.paddle_rect.x += abs(ball.speed[0]) * 0.3
